@@ -1,0 +1,127 @@
+# TinyML Deployment Guide for STM32F411E-DISCO
+
+## Deployment Process
+
+### 1. Prepare the Development Environment
+- Install STM32CubeIDE
+- Install TensorFlow Lite for Microcontrollers
+- Set up Arduino IDE (optional but helpful)
+- Prepare a trained machine learning model (e.g., image classification)
+
+### 2. Model Conversion Workflow
+1. Start with a pre-trained model (e.g., MobileNetV2)
+2. Convert to TensorFlow Lite format
+3. Quantize the model to reduce size and improve efficiency
+   ```python
+   import tensorflow as tf
+
+   # Convert model to TensorFlow Lite
+   converter = tf.lite.TFLiteConverter.from_saved_model(saved_model_dir)
+   converter.optimizations = [tf.lite.Optimize.DEFAULT]
+   converter.target_spec.supported_types = [tf.float16]
+   tflite_model = converter.convert()
+
+   # Save the model
+   with open('model.tflite', 'wb') as f:
+     f.write(tflite_model)
+   ```
+
+### 3. Model Deployment Steps
+1. Use STM32CubeMX to configure the microcontroller
+2. Generate initialization code
+3. Integrate TensorFlow Lite Micro runtime
+4. Load the converted model
+5. Implement inference pipeline
+
+## Expected Results and Metrics
+
+### Performance Metrics to Collect
+1. **Inference Time**
+   - Measure time taken for a single prediction
+   - Typical range: 50-500 ms depending on model complexity
+
+2. **Energy Consumption**
+   - Measure power draw during inference
+   - Track voltage and current
+   - Calculate energy per inference
+
+3. **Accuracy Metrics**
+   - Compare on-device inference accuracy with original model
+   - Expect slight degradation due to quantization
+   - Typical accuracy retention: 85-95%
+
+### Sample Logging Framework
+```cpp
+struct InferenceMetrics {
+  float inference_time_ms;
+  float energy_consumed_mWh;
+  float model_accuracy;
+  int total_inferences;
+};
+
+void log_inference_metrics(InferenceMetrics metrics) {
+  // Log to serial or external storage
+  Serial.print("Inference Time: ");
+  Serial.print(metrics.inference_time_ms);
+  Serial.print(" ms, Energy: ");
+  Serial.print(metrics.energy_consumed_mWh);
+  Serial.print(" mWh, Accuracy: ");
+  Serial.print(metrics.model_accuracy * 100);
+  Serial.println("%");
+}
+```
+
+### Recommended Test Scenarios
+1. Image classification (e.g., person/no person detection)
+2. Object recognition with limited classes
+3. Edge detection algorithms
+4. Simple gesture recognition
+
+## Potential Challenges
+- Limited memory (128 KB SRAM)
+- Computational constraints
+- Power consumption variations
+- Model size limitations
+
+## Optimization Strategies
+- Use quantized models
+- Implement model pruning
+- Leverage hardware-specific optimizations
+- Use lightweight model architectures
+
+## Recommended Initial Experiments
+1. Deploy MobileNetV2 (small variant)
+2. Test with CIFAR-10 dataset
+3. Perform multiple inference runs
+4. Record detailed performance logs
+
+## Measurement Equipment
+- Multimeter for precise power measurements
+- Oscilloscope for detailed power profiling
+- External data logging system
+
+## Key Performance Indicators (KPIs)
+- Inference Latency
+- Energy Efficiency (mWh/Inference)
+- Model Accuracy
+- Resource Utilization
+
+### Sample Performance Target
+- Inference Time: < 200 ms
+- Energy per Inference: < 10 mWh
+- Accuracy: > 85%
+```
+
+## Troubleshooting
+- Ensure proper model quantization
+- Check memory allocation
+- Verify TensorFlow Lite Micro integration
+- Monitor for potential runtime errors
+
+## Reporting Template
+Create a comprehensive report capturing:
+- Experimental setup
+- Detailed metrics
+- Challenges encountered
+- Optimization techniques applied
+- Recommendations for future improvements
