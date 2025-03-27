@@ -1,0 +1,49 @@
+// Assuming a fixed-size input (e.g., 28x28 for MNIST or 96x96 for small image recognition) for prepcocessed input data
+void preprocess_image(uint8_t* raw_image, float* processed_input) {
+    // 1. Resize image (if needed)
+    // Use a downsampling algorithm or hardware-specific resize function
+    
+    // 2. Grayscale conversion (if color image)
+    for (int i = 0; i < INPUT_HEIGHT; i++) {
+        for (int j = 0; j < INPUT_WIDTH; j++) {
+            // Example grayscale conversion
+            uint8_t r = raw_image[(i * INPUT_WIDTH + j) * 3];
+            uint8_t g = raw_image[(i * INPUT_WIDTH + j) * 3 + 1];
+            uint8_t b = raw_image[(i * INPUT_WIDTH + j) * 3 + 2];
+            
+            // Standard luminosity method
+            float gray = 0.299f * r + 0.587f * g + 0.114f * b;
+            
+            // 3. Normalize to 0-1 range
+            processed_input[i * INPUT_WIDTH + j] = gray / 255.0f;
+        }
+    }
+    
+    // 4. Optional: Zero-center the data
+    float mean = calculate_mean(processed_input);
+    for (int i = 0; i < INPUT_HEIGHT * INPUT_WIDTH; i++) {
+        processed_input[i] -= mean;
+    }
+}
+
+// Example data input for inference
+void Perform_Inference(void)
+{
+    // Simulated image data (replace with actual camera input)
+    uint8_t raw_image[INPUT_HEIGHT * INPUT_WIDTH * 3]; // RGB image
+    float processed_input[INPUT_HEIGHT * INPUT_WIDTH];
+    
+    // Capture or load image data
+    capture_image(raw_image);
+    
+    // Preprocess the image
+    preprocess_image(raw_image, processed_input);
+    
+    // Copy processed data to TensorFlow Lite input tensor
+    for (int i = 0; i < input->dims->size; i++) {
+        input->data.f[i] = processed_input[i];
+    }
+
+    // Run inference
+    TfLiteStatus invoke_status = interpreter->Invoke();
+}
